@@ -62,8 +62,6 @@ def show_message(message, success=True):
         if success
         else "message visible error"
     )
-
-
 def update_estimate():
     try:
         service, quantity, total = calculate_total()
@@ -88,4 +86,92 @@ def update_estimate():
         get_element("total-price").textContent = "—"
         get_element("estimate-note").textContent = str(error)
         return False
-      
+        
+      def update_quantity_label():
+‎    service = get_element("service").value
+‎    label = get_element("quantity-label")
+‎
+‎    if service in ("bw", "color", "copy"):
+‎        label.textContent = "Number of pages"
+‎    elif service == "scan":
+‎        label.textContent = "Number of files"
+‎    elif service == "format":
+‎        label.textContent = "Number of files (₱10 minimum each)"
+‎    else:
+‎        label.textContent = "Number of binding services (₱25 minimum each)"
+‎
+‎
+‎# EVENT 1: Calculate Price button click
+‎@when("click", "#calculate-btn")
+‎def calculate_button_clicked(event):
+‎    if update_estimate():
+‎        show_message(
+‎            "Price calculated successfully! "
+‎            "Review your estimated total before submitting.",
+‎            True,
+‎        )
+‎    else:
+‎        show_message(
+‎            "Please check your quantity and try again.",
+‎            False,
+‎        )
+‎
+‎
+‎# EVENT 2: Service selection changes
+‎@when("change", "#service")
+‎def service_changed(event):
+‎    update_quantity_label()
+‎    update_estimate()
+‎
+‎
+‎# EVENT 3: Quantity input changes
+‎@when("input", "#quantity")
+‎def quantity_changed(event):
+‎    update_estimate()
+‎
+‎
+‎# EVENT 4: Rush service checkbox changes
+‎@when("change", "#rush")
+‎def rush_changed(event):
+‎    update_estimate()
+‎
+‎
+‎# EVENT 5: Order form submission
+‎@when("submit", "#order-form")
+‎def submit_order(event):
+‎    event.preventDefault()
+‎
+‎    name = get_element("customer-name").value.strip()
+‎
+‎    if not name:
+‎        show_message("Please enter your name.", False)
+‎        return
+‎
+‎    if not update_estimate():
+‎        show_message(
+‎            "Please correct the quantity before submitting.",
+‎            False,
+‎        )
+‎        return
+‎
+‎    service, quantity, total = calculate_total()
+‎    service_name = SERVICE_NAMES[service]
+‎    unit = UNIT_NAMES[service]
+‎
+‎    confirmation = (
+‎        f"Thank you, {name}! "
+‎        f"Your demo order has been prepared. "
+‎        f"Service: {service_name}. "
+‎        f"Quantity: {quantity} {unit}. "
+‎        f"Estimated total: ₱{total:.2f}. "
+‎        f"This is a demonstration only. "
+‎        f"No order has been sent or stored."
+‎    )
+‎
+‎    show_message(confirmation, True)
+‎
+‎
+‎# Initial website setup
+‎update_quantity_label()
+‎update_estimate()
+‎
